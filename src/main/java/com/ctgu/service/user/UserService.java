@@ -23,6 +23,9 @@ public interface UserService {
     //查询用户通过userCode
     public User getUserListByUserCode(String userCode);
 
+    //查询用户通过id
+    public User getUserListByid(int id);
+
     //添加用户
     public boolean addUser(User user) throws SQLException;
 

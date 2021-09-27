@@ -102,6 +102,20 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
+    @Override//查询用户通过id
+    public User getUserListByid(int id) {
+        Connection connection = null;
+        connection = BaseDao.getConnection();
+        User user = null;
+        try {
+            user = userDao.getUser(id,connection);
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        BaseDao.closeResource(connection,null,null);
+        return user;
+    }
+
     @Override//添加用户
     public boolean addUser(User user) throws SQLException {
         Connection connection = null;
@@ -137,14 +151,8 @@ public class UserServiceImpl implements UserService {
     @Test
     public void test() throws ParseException, SQLException {
         UserService userService = new UserServiceImpl();
-        boolean result =  userService.modifyUser(15,1,null,
-                2, null,"12345678900", "CTGU", 1);
-
-        if (result){
-            System.out.println("success");
-        }else {
-            System.out.println("false");
-        }
+        User user = userService.getUserListByid(2);
+        System.out.println(user.getUserName());
     }
 
 }

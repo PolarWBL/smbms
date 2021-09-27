@@ -43,12 +43,17 @@ public class UserServlet extends HttpServlet {
             this.add(req,resp);
         }else if (method.equals("deluser")){
             this.deluser(req,resp);
+        }else if (method.equals("modify")){
+            this.modify(req,resp);
         }else if (method.equals("modifyexe")){
             this.modifyexe(req,resp);
+        }else if (method.equals("view")){
+            this.view(req,resp);
         }
 
 
     }
+
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -240,7 +245,7 @@ public class UserServlet extends HttpServlet {
             String phone = req.getParameter("phone");
             String address = req.getParameter("address");
             int userRole = Integer.parseInt(req.getParameter("userRole"));
-            int createBy = user.getUserRole();
+            int createBy = user.getId();
             Date birthday = null;
             try {
                 birthday = dateformat.parse(req.getParameter("birthday"));
@@ -292,24 +297,26 @@ public class UserServlet extends HttpServlet {
         int id = Integer.parseInt(req.getParameter("uid"));
         Object attribute = req.getSession().getAttribute(Constants.USER_SESSION);
         HashMap<String, String> resultMap = new HashMap<>();
-        //调用service方法
-        if (id >0){
-            UserService userService = new UserServiceImpl();
-            User user = (User) attribute;
-            if (user.getId() != id){
-                if (userService.deluser(id)){
-                    resultMap.put("delResult", "true");
-                }else{
-                    resultMap.put("delResult", "false");
+        //如果session存在,调用service方法
+        if (attribute!=null){
+            if (id >0){
+                UserService userService = new UserServiceImpl();
+                User user = (User) attribute;
+                if (user.getId() != id){
+                    if (userService.deluser(id)){
+                        resultMap.put("delResult", "true");
+                    }else{
+                        resultMap.put("delResult", "false");
+                        resp.sendRedirect(req.getContextPath()+"/jsp/user.do?method=query");
+                    }
+                }else {
+                    resultMap.put("delResult", "cannotdel");
                     resp.sendRedirect(req.getContextPath()+"/jsp/user.do?method=query");
                 }
-            }else {
-                resultMap.put("delResult", "cannotdel");
+            }else{
+                resultMap.put("delResult", "notexist");
                 resp.sendRedirect(req.getContextPath()+"/jsp/user.do?method=query");
             }
-        }else{
-            resultMap.put("delResult", "notexist");
-            resp.sendRedirect(req.getContextPath()+"/jsp/user.do?method=query");
         }
 
         resp.setContentType("application/json");
@@ -328,10 +335,100 @@ public class UserServlet extends HttpServlet {
         }
     }
 
+    //进入修改页面
+    private void modify(HttpServletRequest req, HttpServletResponse resp) {
+        System.out.println("调用了modify方法");
+        //从前端获取要修改的用户id
+        int id = Integer.parseInt(req.getParameter("uid"));
+        //查询对应用户编号的用户信息
+        UserService userService = new UserServiceImpl();
+        User user = userService.getUserListByid(id);
+        //返回值给前端
+        req.setAttribute("user",user);
+        //返回前端页面
+        try {
+            req.getRequestDispatcher("usermodify.jsp").forward(req,resp);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
     //修改用户信息
     private void modifyexe(HttpServletRequest req, HttpServletResponse resp) {
         System.out.println("调用了modifyexe方法");
+        //从前端获取要修改的用户id
+        int id = Integer.parseInt(req.getParameter("uid"));
+        //从前端获取当前用户的session
+        Object attribute = req.getSession().getAttribute(Constants.USER_SESSION);
 
+        //如果session存在
+        if (attribute!=null){
+            //从前端获取数据
+            //将attribute转为user类型
+            UserService userService = new UserServiceImpl();
+            User user = (User) attribute;
+            //修改者
+            int modifyBy = user.getId();
+            //用户名
+            String userName = req.getParameter("userName");
+            //性别
+            int gender =Integer.parseInt(req.getParameter("gender"));
+            //出生日期
+            SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd");
+            Date birthday = null;
+            try {
+                birthday = dateformat.parse(req.getParameter("birthday"));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            //电话
+            String phone = req.getParameter("phone");
+            //地址
+            String address = req.getParameter("address");
+            //角色
+            int userRole = Integer.parseInt(req.getParameter("userRole"));
+
+            //将数据发送给service
+            boolean result = false;
+            try {
+                result =  userService.modifyUser(id,modifyBy,userName,gender,birthday,phone,address,userRole);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            if (result){
+                req.setAttribute(Constants.MESSAGE, "修改成功!");
+                try {
+                    resp.sendRedirect(req.getContextPath()+"/jsp/user.do?method=query");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }else {
+                req.setAttribute(Constants.MESSAGE, "添加失败!");
+            }
+
+        }else {
+            req.setAttribute(Constants.MESSAGE, "添加失败!");
+        }
+    }
+
+    //进入用户查看界面
+    private void view(HttpServletRequest req, HttpServletResponse resp) {
+        System.out.println("调用了view方法");
+        //从前端获取要查看的用户id
+        int id = Integer.parseInt(req.getParameter("uid"));
+        //查询对应用户编号的用户信息
+        UserService userService = new UserServiceImpl();
+        User user = userService.getUserListByid(id);
+        //返回值给前端
+        req.setAttribute("user",user);
+        //返回前端页面
+        try {
+            req.getRequestDispatcher("userview.jsp").forward(req,resp);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

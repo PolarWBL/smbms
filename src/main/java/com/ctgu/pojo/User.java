@@ -12,7 +12,7 @@ public class User {
     private String phone;
     private String address;
     private Integer userRole;
-    private  Integer createdBy;
+    private Integer createdBy;
     private Date creationDate;
     private Integer modifyBy;
     private Date modifyDate;

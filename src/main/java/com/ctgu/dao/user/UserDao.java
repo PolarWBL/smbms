@@ -11,7 +11,7 @@ import java.util.List;
 public interface UserDao {
     //得到用户信息
     public User getUser(String usercode, Connection connection) throws SQLException;
-
+    public User getUser(int id, Connection connection) throws SQLException;
     //修改用户密码
     public int updatePwd(Connection connection, String userCode, String password) throws SQLException;
 

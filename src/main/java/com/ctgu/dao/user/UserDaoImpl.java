@@ -46,6 +46,35 @@ public class UserDaoImpl implements UserDao {
     return user;
     }
 
+    public User getUser(int id, Connection connection) throws SQLException {
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        connection =  BaseDao.getConnection();
+        User user = new User();
+        if(connection!=null){
+            String sql = "select * from smbms_user where id=?";
+            Object[] p = {id};
+            resultSet = BaseDao.execute(connection,preparedStatement,resultSet,sql,p);
+            if(resultSet.next()){
+                user.setId(resultSet.getInt("id"));
+                user.setUserCode(resultSet.getString("userCode"));
+                user.setUserName(resultSet.getString("userName"));
+                user.setUserPassword(resultSet.getString("userPassword"));
+                user.setGender(resultSet.getInt("gender"));
+                user.setBirthday(resultSet.getDate("birthday"));
+                user.setPhone(resultSet.getString("phone"));
+                user.setAddress(resultSet.getString("address"));
+                user.setUserRole(resultSet.getInt("userRole"));
+                user.setCreatedBy(resultSet.getInt("createdBy"));
+                user.setCreationDate(resultSet.getDate("creationDate"));
+                user.setModifyBy(resultSet.getInt("modifyBy"));
+                user.setModifyDate(resultSet.getDate("modifyDate"));
+            }
+            BaseDao.closeResource(null,resultSet,preparedStatement);
+        }
+        return user;
+    }
+
     @Override//修改用户密码
     public int updatePwd(Connection connection, String userCode, String password) throws SQLException {
         PreparedStatement preparedStatement = null;
